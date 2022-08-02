@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro"
+       name="ur5e" >
+
+  <!-- common stuff -->
+  <xacro:include filename="$(find ur_e_description)/urdf/common.gazebo.xacro" />
+
+  <!-- ur5e -->
+  <xacro:include filename="$(find ur_e_description)/urdf/ur5e.urdf.xacro" />
+
+  <!-- arm -->
+  <xacro:ur5e_robot prefix="" joint_limited="false"/>
+
+  <link name="world" />
+
+  <joint name="world_joint" type="fixed">
+    <parent link="world" />
+    <child link = "base_link" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </joint>
+
+  <!-- camera -->
+  <xacro:arg name="use_nominal_extrinsics" default="false" />
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
+
+  <xacro:sensor_d435i parent="wrist_3_link" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
+    <origin xyz="-0.065 0.08 0.0" rpy="1.57 0.0 1.57"/>
+  </xacro:sensor_d435i>
+
+
+</robot>
