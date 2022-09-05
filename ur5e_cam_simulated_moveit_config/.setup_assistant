@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ur5e_cam_description
+    relative_path: urdf/ur5e_robot_camera_v3.urdf.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/ur5e.srdf
+  CONFIG:
+    author_name: Alberto Losa
+    author_email: alberlosib@hotmail.com
+    generated_timestamp: 1662281096
