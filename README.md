@@ -41,15 +41,15 @@ Para la simulación es necesario lanzar el archivo demo_gazebo.launch de este pk
 ```
 roslaunch ur5e_cam-grippers_sim_moveit_config demo_gazebo.launch
 ```
-Al añadir la pinza de vacío se obtiene un error en la ejecución de este pkg:
+Para actuar sobre la pinza de vacío, el plugin un servicio llamado /ur5e/vacuum_gripper/grasping/on (para encender el vacío) y /ur5e/vacuum_gripper/grasping/off (para soltar el objeto). Para llamar a estos servicios ultilizamos las siguientes líneas de código:
 ```
-[INFO] [1666801058.137801, 0.000000]: Calling service /gazebo/spawn_urdf_model
-Error [parser.cc:488] parse as old deprecated model file failed.
-Error Code 4 Msg: Required attribute[filename] in element[plugin] is not specified in SDF.
-Error Code 8 Msg: Error reading element <plugin>
-Error Code 8 Msg: Error reading element <model>
-Error Code 8 Msg: Error reading element <sdf>
+rosservice call /ur5/vacuum_gripper/on "{}" 
+
+rosservice call /ur5/vacuum_gripper/off "{}" 
 ```
+El estado de la pinza se actualiza en el topic /ur5e/vacuum_gripper/grasping.
+
+Problema actual: al hacer el call para activar la pinza de vacío, el estado en el topic no se actualiza (siempre en false).
 
 ## Conexión con el robot ur5e
 Para la conexión con el robot real, seguimos las instrucciones descritas el el [repositorio oficial de UniversalRobots](https://github.com/UniversalRobots/Universal_Robots_ROS_Driver).
@@ -65,3 +65,22 @@ Es necesario instalar también el pkg de ur_msgs:
 ```
 git clone https://github.com/ros-industrial/ur_msgs.git
 ```
+
+# USO DE YOLO
+Se hace uso del repositorio creado por M. Bjelonic "YOLO ROS: Real-Time Object Detection for ROS", URL: https://github.com/leggedrobotics/darknet_ros, 2018.
+
+Si se dispone de una GPU Nvidia compatible con CUDA (con este software instalado), el procesamiento será notablemente más rápido (más información en el link del repositorio). 
+
+Para instalar CUDA:
+```
+sudo apt-get update
+sudo apt-get -y install nvidia-cuda-toolkit
+```
+
+E instalamos el pkg y compilamos con:
+```
+git clone https://github.com/leggedrobotics/darknet_ros.git
+catkin_make -DCMAKE_BUILD_TYPE=Release
+```
+
+El catkin make 
