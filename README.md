@@ -66,12 +66,14 @@ Es necesario instalar también el pkg de ur_msgs:
 git clone https://github.com/ros-industrial/ur_msgs.git
 ```
 
-# USO DE YOLO
+## USO DE YOLO
 Se hace uso del repositorio creado por M. Bjelonic "YOLO ROS: Real-Time Object Detection for ROS", URL: https://github.com/leggedrobotics/darknet_ros, 2018.
 
 Si se dispone de una GPU Nvidia compatible con CUDA, el procesamiento será notablemente más rápido (más información en el link del repositorio). 
-Esta parte a continuación no se ha podido realizar de manera satisfactoria. Para continuar usando Yolo con la CPU (notablemente más lento ir a **)
+
 Primero hay que instalar los drivers de GPU Nvidia:
+
+**Esta parte a continuación no se ha podido realizar de manera satisfactoria. Para continuar usando Yolo con la CPU (notablemente más lento ir a *1)**
 ```
 sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt install nvidia-driver-440
@@ -95,13 +97,13 @@ En mi caso sale un error, por lo tanto hay que hacer:
 sudo apt-get install aptitude
 sudo aptitude install cuda
 ```
+***1**
 
 E instalamos el pkg y compilamos con:
 ```
 git clone --recursive https://github.com/leggedrobotics/darknet_ros.git
 catkin_make -DCMAKE_BUILD_TYPE=Release
 ```
-**
 
 Por último, se realiza un test de la instalación:
 ```
@@ -109,7 +111,7 @@ catkin build darknet_ros --no-deps --verbose --catkin-make-args run_tests
 ```
 (En mi caso no he podido porque he tenido que hacer la compilación con catkin_make)
 
-# MÁQUINA DE ESTADOS
+## MÁQUINA DE ESTADOS
 Para ver la detección en funcionamiento es necesario lanzar los siguientes paquetes:
 
 Para comenzar se lanza el ur5e con MoveIt, Gazebo y Rviz:

@@ -104,7 +104,7 @@ class Moving(smach.State):
                                     self.result[1],
                                     self.result[2]), tf.transformations.quaternion_from_euler(0, 0, 0),
                                     rospy.Time.now(), "objeto", "camera_color_optical_frame")
-        (trans, _) = self.listener.lookupTransform("world", "base_link", rospy.Time(0))
+        (trans, _) = self.listener.lookupTransform('base_link', 'objeto', rospy.Time(0))
         rospy.loginfo("La transformada del objeto se encuentra en: %f(x), %f(y), %f(z)", trans[0], trans[1], trans[2])
         IK_moveJ.main(0, 90, 0, self.result[0], self.result[1], self.result[2])
 
