@@ -69,18 +69,58 @@ git clone https://github.com/ros-industrial/ur_msgs.git
 # USO DE YOLO
 Se hace uso del repositorio creado por M. Bjelonic "YOLO ROS: Real-Time Object Detection for ROS", URL: https://github.com/leggedrobotics/darknet_ros, 2018.
 
-Si se dispone de una GPU Nvidia compatible con CUDA (con este software instalado), el procesamiento será notablemente más rápido (más información en el link del repositorio). 
-
-Para instalar CUDA:
+Si se dispone de una GPU Nvidia compatible con CUDA, el procesamiento será notablemente más rápido (más información en el link del repositorio). 
+Esta parte a continuación no se ha podido realizar de manera satisfactoria. Para continuar usando Yolo con la CPU (notablemente más lento ir a **)
+Primero hay que instalar los drivers de GPU Nvidia:
 ```
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt install nvidia-driver-440
+sudo reboot     --> CUIDADO! REINICIAMOS EL SISTEMA	
+nvidia-smi
+```
+
+Para instalar CUDA se especifica la configuración y se dan las instrucciones para la instalación [aquí](https://developer.nvidia.com/cuda-toolkit) (en mi caso he instalado la versión 11.8 ya que las anteriores dan problemas):
+```
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
+sudo dpkg -i cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
+sudo cp /var/cuda-repo-ubuntu2004-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
 sudo apt-get update
-sudo apt-get -y install nvidia-cuda-toolkit
+sudo apt-get -y install cuda
+```
+
+En mi caso sale un error, por lo tanto hay que hacer:
+```
+sudo apt-get install aptitude
+sudo aptitude install cuda
 ```
 
 E instalamos el pkg y compilamos con:
 ```
-git clone https://github.com/leggedrobotics/darknet_ros.git
+git clone --recursive https://github.com/leggedrobotics/darknet_ros.git
 catkin_make -DCMAKE_BUILD_TYPE=Release
 ```
+**
 
-El catkin make 
+Por último, se realiza un test de la instalación:
+```
+catkin build darknet_ros --no-deps --verbose --catkin-make-args run_tests
+```
+(En mi caso no he podido porque he tenido que hacer la compilación con catkin_make)
+
+# MÁQUINA DE ESTADOS
+Para ver la detección en funcionamiento es necesario lanzar los siguientes paquetes:
+
+Para comenzar se lanza el ur5e con MoveIt, Gazebo y Rviz:
+
+```
+roslaunch ur5e_cam-grippers_simulated_moveit_config demo_gazebo.launch
+```
+
+Cuando se haya inicializado se laza el paquete Python que contiene la máquina de estados:
+```
+rosrun ur5e_cam_description states_machine_simulation.py
+```
+
+Para que la detección tenga efecto es necesario colocar algún objeto en Gazebo (colocarlo justo debajo de la herramienta, ya que esa será la posición de visualización).

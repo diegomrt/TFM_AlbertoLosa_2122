@@ -41,7 +41,7 @@
             </plugin>
         </gazebo>
 
-        <!-- <link name="vacuum_gripper1">
+        <link name="vacuum_gripper1">
         <gravity>0</gravity>
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -348,7 +348,7 @@
             <maxDistance>0.05</maxDistance>
             <minDistance>0.01</minDistance>
             </plugin>
-        </gazebo> -->
+        </gazebo>
 
     </xacro:macro>
     
