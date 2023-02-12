@@ -554,16 +554,13 @@
       <min_depth>0</min_depth>-->
         <sensor name="cameracolor" type="camera">
             <camera name="camera">
-                <!-- <horizontal_fov>1.2112585008840648</horizontal_fov> -->
-                <!-- <image>
-                    <width>640</width>
-                    <height>480</height>
-                    <format>RGB_INT8</format>
-                </image> -->
+                <!-- <horizontal_fov>${69.4*deg_to_rad}</horizontal_fov> -->
                 <horizontal_fov>1.4870205226991688</horizontal_fov>
                 <image>
                     <width>1280</width>
                     <height>720</height>
+                    <!-- <width>640</width>
+            <height>480</height> -->
                     <format>RGB_INT8</format>
                 </image>
                 <clip>
@@ -693,7 +690,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper" />
-        <origin rpy="0 1.5708 0" xyz="0.01 0.0125 0" />
+        <origin rpy="0 0 0" xyz="0 0 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -728,7 +725,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper1" />
-        <origin rpy="0 1.5708 0" xyz="0.01 -0.0125 0" />
+        <origin rpy="0 0 0" xyz="0 0.0125 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -763,7 +760,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper2" />
-        <origin rpy="0 1.5708 0" xyz="0.01 0 0.0125" />
+        <origin rpy="0 0 0" xyz="0 -0.0125 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -798,7 +795,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper3" />
-        <origin rpy="0 1.5708 0" xyz="0.01 0 -0.0125" />
+        <origin rpy="0 0 0" xyz="0.0125 0 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -833,7 +830,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper4" />
-        <origin rpy="0 1.5708 0" xyz="0.01 0 0" />
+        <origin rpy="0 0 0" xyz="-0.0125 0 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -868,7 +865,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper5" />
-        <origin rpy="0 1.5708 0" xyz="0.01 0.0125 0.0125" />
+        <origin rpy="0 0 0" xyz="0.0125 0.0125 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -903,7 +900,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper6" />
-        <origin rpy="0 1.5708 0" xyz="0.01 -0.0125 0.0125" />
+        <origin rpy="0 0 0" xyz="-0.0125 0.0125 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -938,7 +935,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper7" />
-        <origin rpy="0 1.5708 0" xyz="0.01 0.0125 -0.0125" />
+        <origin rpy="0 0 0" xyz="0.0125 -0.0125 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>
@@ -973,7 +970,7 @@
         <axis xyz="1 0 0" />
         <parent link="wrist_3_link" />
         <child link="vacuum_gripper8" />
-        <origin rpy="0 1.5708 0" xyz="0.01 -0.0125 -0.0125" />
+        <origin rpy="0 0 0" xyz="-0.0125 -0.0125 0" />
         <limit effort="50" lower="0" upper="0" velocity="50" />
         <dynamics damping="0.0" friction="10" />
     </joint>

@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro"
+       name="ur5e_cam" >
+
+  <xacro:include filename="$(find ur_description)/urdf/inc/ur5e_macro.xacro"/>
+  <xacro:ur5e_robot prefix="" />
+
+  <!--
+    Attach the Gazebo model to Gazebo's world frame.
+
+    Note: if you're looking to integrate a UR into a larger scene and need
+    to add EEFs or other parts, DO NOT change this file or the 'world' link
+    here. Create a NEW xacro instead and decide whether you need to add
+    a 'world' link there.
+  -->
+  <link name="world"/>
+  <joint name="world_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- camera support -->
+  <link name="support">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://ur5e_cam_description/meshes/soporte_cam.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="support_joint" type="fixed">
+    <parent link="wrist_3_link"/>
+    <child link="support"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- camera -->
+  <xacro:arg name="use_nominal_extrinsics" default="false" />
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
+
+  <xacro:sensor_d435i parent="support" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
+    <origin xyz="0.125 0 0.0191" rpy="0 -1.57 0"/>
+  </xacro:sensor_d435i>
+
+  <!-- vacuum gripper -->
+  <xacro:include filename="$(find onrobot_vg_description)/urdf/onrobot_vgc10_1cup_model_macro.xacro" />
+  <xacro:onrobot_vgc10 prefix=""/>
+
+  <joint name="robot_vgc10_joint" type="fixed">
+    <parent link="support"/>
+    <child link="onrobot_vgc10_base_link"/>
+    <origin xyz="0 0 0.009" rpy="0 0 0"/>
+  </joint> 
+
+</robot>

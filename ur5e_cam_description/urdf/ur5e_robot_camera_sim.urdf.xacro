@@ -60,7 +60,7 @@
 
   <!-- camera -->
   <xacro:arg name="use_nominal_extrinsics" default="false" />
-  <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro"/>
+  <xacro:include filename="$(find realsense2_description_issaias)/urdf/_d435.urdf.xacro"/>
 
   <xacro:sensor_d435 parent="wrist_3_link">
     <origin xyz="0.0 0.045 -0.03" rpy="0 0.0 1.57"/>

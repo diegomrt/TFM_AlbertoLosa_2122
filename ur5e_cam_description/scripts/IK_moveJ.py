@@ -26,7 +26,7 @@ display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path
 
 # Inverse Kinematics (IK): mover TCP (brida) a una orientacion dada (Euler) y posicion x, y, z dada. Los angulos se convierten a cuaternios (mensaje de pose)
 
-def move_pose_arm(roll, pitch, yaw, x, y, z):
+def move_pose_arm_euler(roll, pitch, yaw, x, y, z):
     pose_goal = geometry_msgs.msg.Pose()
     quat = quaternion_from_euler(roll*(pi/180), pitch*(pi/180), yaw*(pi/180))
     pose_goal.orientation.x = quat[0]
@@ -43,10 +43,34 @@ def move_pose_arm(roll, pitch, yaw, x, y, z):
     arm_group.stop()  # To guarantee no residual movement
     arm_group.clear_pose_targets()
 
+def move_pose_arm_quaternion(quaternion, x, y, z):
+    pose_goal = geometry_msgs.msg.Pose()
+    pose_goal.orientation.x = quaternion[0]
+    pose_goal.orientation.y = quaternion[1]
+    pose_goal.orientation.z = quaternion[2]
+    pose_goal.orientation.w = quaternion[3]
+    pose_goal.position.x = x
+    pose_goal.position.y = y
+    pose_goal.position.z = z
+    arm_group.set_pose_target(pose_goal)
 
-def main(roll, pitch, yaw, x, y, z):
+    plan = arm_group.go(wait=True)
+
+    arm_group.stop()  # To guarantee no residual movement
+    arm_group.clear_pose_targets()
+
+
+def main_euler(roll, pitch, yaw, x, y, z):
     
-    move_pose_arm(roll, pitch, yaw, x, y, z)
+    move_pose_arm_euler(roll*(180/pi), pitch*(180/pi), yaw*(180/pi), x, y, z)
+
+    rospy.loginfo("Movement finished.")
+    # moveit_commander.roscpp_shutdown()
+
+
+def main_quaternion(quaternion, x, y, z):
+    
+    move_pose_arm_quaternion(quaternion, x, y, z)
 
     rospy.loginfo("Movement finished.")
     # moveit_commander.roscpp_shutdown()
@@ -55,31 +79,25 @@ def main(roll, pitch, yaw, x, y, z):
 if __name__ == '__main__':
 
     # Ejemplo de uso de IK (en loop)
-    for i in range(2):
-        rospy.loginfo("Moving arm to HOME point")
-        move_pose_arm(0, 90, 0, 0.4, 0, 0.6)
-        rospy.loginfo("Opening gripper")
-        move_joint_hand(0)
-        rospy.sleep(1)
-        rospy.loginfo("Moving arm to point_1")
-        move_pose_arm(45, 45, 45, 0.5, -0.25, 0.3)
-        rospy.sleep(1)
-        rospy.loginfo("Moving arm to point_2")
-        move_pose_arm(0, -90, 90, 0.5, 0.25, 0.3)
-        rospy.sleep(1)
-        rospy.loginfo("Closing gripper to 0.4")
-        move_joint_hand(0.4)
-        rospy.sleep(1)
-        rospy.loginfo("Moving arm to point_3")
-        move_pose_arm(0, 0, 90, 0.2, 0, 0.8)
-        rospy.loginfo("Opening gripper")
-        move_joint_hand(0)
-        rospy.sleep(1)
-        rospy.loginfo("Moving arm to point_4")
-        move_pose_arm(0, 0, 0, 0, -0.5, 0.4)
-        rospy.loginfo("Closing gripper to 0.6")
-        move_joint_hand(0.6)
-        rospy.sleep(1)
+    # for i in range(2):
+    #     rospy.loginfo("Moving arm to HOME point")
+    #     move_pose_arm_euler(0, 90, 0, 0.4, 0, 0.6)
+    #     rospy.sleep(1)
+    #     rospy.loginfo("Moving arm to point_1")
+    #     move_pose_arm_euler(45, 45, 45, 0.5, -0.25, 0.3)
+    #     rospy.sleep(1)
+    #     rospy.loginfo("Moving arm to point_2")
+    #     move_pose_arm_euler(0, -90, 90, 0.5, 0.25, 0.3)
+    #     rospy.sleep(1)
+    #     rospy.loginfo("Moving arm to point_3")
+    #     move_pose_arm_euler(0, 0, 90, 0.2, 0, 0.8)
+    #     rospy.sleep(1)
+    #     rospy.loginfo("Moving arm to point_4")
+    #     move_pose_arm_euler(0, 0, 0, 0, -0.5, 0.4)
+    #     rospy.sleep(1)
+
+    move_pose_arm_euler(180, 0, 0, 0.2, 0.2, 0.2)
+    rospy.sleep(1)
 
     rospy.loginfo("Movement finished.")
     moveit_commander.roscpp_shutdown()

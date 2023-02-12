@@ -16,8 +16,10 @@ Es necesario incorporar al modelo urdf un plugin que permita a la cámara Realse
 Para ello, utilizamos el plugin creado por pal-robotics además de un pkg de los modelos de las cámaras de RealSense creado por Issaiass:
 ```
 git clone https://github.com/pal-robotics/realsense_gazebo_plugin
-git clone https://github.com/issaiass/realsense2_description.git
+git clone https://github.com/issaiass/realsense2_description.git realsense2_description_issaias
 ```
+Ahora debemos acudir al pkg creado como realsense_description_issaias y en urdf/_d435.urdf.xacro cambiar las líneas en las que se hace referencia al pkg realsense2_description y referenciarlo a realsense2_description_issaias.También se debe cambiar el nombre del pkg en el CMakeList.txt y en el package.xml.
+
 Se crea un urdf que incorpora tanto la descripción del robot (ur5e) como el modelo de la cámara de RealSense con el plugin para la simulación en gazebo: **ur5e_robot_camera_sim.urdf.xacro** del pkg ur5e_cam_description.
 
 Con MoveIt Setup Assistant realizamos el pkg ur5e_cam_sim_moveit_config (documento de apoyo [aquí](https://ros-planning.github.io/moveit_tutorials/doc/setup_assistant/setup_assistant_tutorial.html))
@@ -66,6 +68,13 @@ Es necesario instalar también el pkg de ur_msgs:
 git clone https://github.com/ros-industrial/ur_msgs.git
 ```
 
+Para controlar el robot con MoveIt hay que lanzar los siguientes .launch:
+```
+roslaunch ur_robot_driver ur5e_bringup.launch robot_ip:=192.168.1.10
+roslaunch ur5e_cam-grippers_real_moveit_config moveit_planning_execution.launch
+rosrun rviz rviz
+```
+
 ## USO DE YOLO
 Se hace uso del repositorio creado por M. Bjelonic "YOLO ROS: Real-Time Object Detection for ROS", URL: https://github.com/leggedrobotics/darknet_ros, 2018.
 
@@ -73,7 +82,8 @@ Si se dispone de una GPU Nvidia compatible con CUDA, el procesamiento será nota
 
 Primero hay que instalar los drivers de GPU Nvidia:
 
-**Esta parte a continuación no se ha podido realizar de manera satisfactoria. Para continuar usando Yolo con la CPU (notablemente más lento ir a *1)**
+**Esta parte a continuación no se ha podido realizar de manera satisfactoria. Para continuar usando Yolo con la CPU (notablemente más lento ir a &1)**
+
 ```
 sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt install nvidia-driver-440
@@ -97,7 +107,7 @@ En mi caso sale un error, por lo tanto hay que hacer:
 sudo apt-get install aptitude
 sudo aptitude install cuda
 ```
-***1**
+**&1. Continuación**
 
 E instalamos el pkg y compilamos con:
 ```

@@ -2,6 +2,8 @@
 
 import FK
 import IK_moveJ
+import ur5_grippers as gripper
+
 import rospy
 import roslaunch
 import smach
@@ -15,6 +17,8 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 from cv_bridge import CvBridge, CvBridgeError
+
+from math import pi
 
 import pyrealsense2 as rs
 
@@ -76,13 +80,13 @@ class Moving(smach.State):
             rospy.loginfo("receiving video frame")
             cvbrd = CvBridge()
             self.cv_image = cvbrd.imgmsg_to_cv2(data)
-            cv.imshow("camera1", self.cv_image)
-            cv.waitKey(1)
+            # cv.imshow("camera1", self.cv_image)
+            # cv.waitKey(1)
         except CvBridgeError as e:
             rospy.logerr("Error en depth_callback" + e)
 
     def get_realxyz_callback(self, data):
-        print(data)
+        # print(data)
         self._intrinsics = rs.intrinsics()
         self._intrinsics.width = data.width
         self._intrinsics.height = data.height
@@ -100,20 +104,58 @@ class Moving(smach.State):
         # Actualizamos la transformada
         self.pos_publisher = tf.TransformBroadcaster()
         self.listener = tf.TransformListener()
-        self.pos_publisher.sendTransform((self.result[0],
-                                    self.result[1],
-                                    self.result[2]), tf.transformations.quaternion_from_euler(0, 0, 0),
-                                    rospy.Time.now(), "objeto", "camera_color_optical_frame")
-        (trans, _) = self.listener.lookupTransform('base_link', 'objeto', rospy.Time(0))
-        rospy.loginfo("La transformada del objeto se encuentra en: %f(x), %f(y), %f(z)", trans[0], trans[1], trans[2])
-        IK_moveJ.main(0, 90, 0, self.result[0], self.result[1], self.result[2])
+        while not rospy.is_shutdown():
+            self.pos_publisher.sendTransform((self.result[0],
+                                        self.result[1],
+                                        self.result[2]), tf.transformations.quaternion_from_euler(0, 0, 180),
+                                        rospy.Time.now(), "objeto", "camera_color_optical_frame")
+            try:
+                (trans, rotation) = self.listener.lookupTransform('base_link', 'objeto', rospy.Time(0))
+                rospy.loginfo("La transformada del objeto se encuentra en: %f(x), %f(y), %f(z)", trans[0], trans[1], trans[2])
+                print("Quaternion del objeto se encuentra en: ", str(rotation))
+                print("La transformada a euler del objeto se encuentra en: ", str(tf.transformations.quaternion_from_euler(rotation[0], rotation[1], rotation[2])))
+
+                # self.pos_publisher.sendTransform((trans[0],
+                #                         trans[1],
+                #                         trans[2]), rotation,
+                #                         rospy.Time.now(), "objeto2", "base_link")  ### Vamos con la misma orientación que la recta que une la camara y el objeto
+
+                self.pos_publisher.sendTransform((trans[0],
+                                        trans[1],
+                                        trans[2]+0.01), tf.transformations.quaternion_from_euler(pi, 0, 0),
+                                        rospy.Time.now(), "objeto2", "base_link")   ### Para ir perpend al suelo
+
+                rospy.sleep(2)
+
+                # IK_moveJ.main_quaternion(rotation, trans[0], trans[1], trans[2])  ### Vamos con la misma orientación que la recta que une la camara y el objeto
+                IK_moveJ.main_quaternion(tf.transformations.quaternion_from_euler(pi, 0, 0), trans[0], trans[1], trans[2])  ### Para ir perpend al suelo
+                rospy.loginfo("Activando pinza de vacío")
+                gripper.trigger_gripper(True)
+                rospy.loginfo("Paso por punto intermedio")
+                FK.main(0, -85, 109, -113, -90, -180)
+                rospy.loginfo("Dejando objeto")
+                FK.main(86, -85, 109, -113, -90, -180)
+                rospy.loginfo("Desactivando pinza de vacío")
+                gripper.trigger_gripper(False)
+                rospy.sleep(10)
+                rospy.loginfo("Terminado movimiento")
+                self.object_done = True
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                rospy.logerr("Error al publicar transformada TF")
+                rospy.sleep(1)
+                continue
+
+            rospy.sleep(1)
+        
 
     def execute(self, userdata):
         rospy.loginfo('Executing state Moving')
+        self.object_done = False
 
         try:
             rospy.loginfo("Moving to view pose")
-            FK.main(0, -113, 94, -10, -90, -180)
+            FK.main(0, -87, 81, -8, -90, -180)
             rospy.loginfo("Ejecutando Yolo")
             ruta_yolo = "/home/alberto/tfm_ws/src/darknet_ros/darknet_ros/launch/darknet_ros.launch"
             uuid_yolo = roslaunch.rlutil.get_or_generate_uuid(None, False)
@@ -141,6 +183,7 @@ class Moving(smach.State):
             # To return a new list, use the sorted() built-in function...
             # self.bounding_box_sorted = sorted(self.bounding_box, key=Class x: x.count, reverse=True)
             for elem in (self.bounding_box):
+                self.object_done = False
                 self.x_med = round((elem.xmax + elem.xmin)/2)
                 self.y_med = round((elem.ymax + elem.ymin)/2)
                 self.z_med = (self.cv_image[self.y_med,self.x_med])/1000
@@ -157,17 +200,20 @@ class Moving(smach.State):
 
                 self.get_realxyz_subscriber = rospy.Subscriber('/camera/color/camera_info', CameraInfo, self.get_realxyz_callback, queue_size=1) #Seguir aquí (hacer función feedback)
                 
-                self.cv_image2 = cv.cvtColor(self.cv_image, cv.COLOR_GRAY2RGB)
-                cv.circle(self.cv_image2,(self.x_med,self.y_med),5,(0,0,0),-1)
-                plt.imshow(self.cv_image)
-                cv.imshow("camera", self.cv_image2)
-                cv.waitKey(0)
-                plt.show()
-                cv.destroyAllWindows()
+                # self.cv_image2 = cv.cvtColor(self.cv_image, cv.COLOR_GRAY2RGB)
+                # cv.circle(self.cv_image2,(self.x_med,self.y_med),5,(0,0,0),-1)
+                # plt.imshow(self.cv_image)
+                # cv.imshow("camera", self.cv_image2)
+                # cv.waitKey(0)
+                # plt.show()
+                # cv.destroyAllWindows()
 
 
-            rospy.loginfo('Esperando 20 segundos para repetir el proceso')
-            rospy.sleep(20)
+            # rospy.loginfo('Esperando 20 segundos para repetir el proceso')
+            # rospy.sleep(20)
+
+                while self.object_done == False:
+                    rospy.sleep(5)
 
             return 'Success'
         except Exception as ex:

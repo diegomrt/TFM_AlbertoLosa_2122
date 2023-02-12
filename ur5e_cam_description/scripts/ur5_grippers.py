@@ -206,6 +206,7 @@ def gripper8_off():
         print("Service call failed: %s", e)
 
 def trigger(msg):
+    print(msg)
     gripper_trigger = msg.data
     rospy.loginfo("Mensaje recibido: %s", msg.data)
     if gripper_trigger:
@@ -229,16 +230,42 @@ def trigger(msg):
         gripper6_off()
         gripper7_off()
         gripper8_off()
+
+
+def trigger_gripper(msg):
+    if msg:
+        gripper_on()
+        gripper1_on()
+        gripper2_on()
+        gripper3_on()
+        gripper4_on()
+        gripper5_on()
+        gripper6_on()
+        gripper7_on()
+        gripper8_on()
+
+    else:
+        gripper_off()
+        gripper1_off()
+        gripper2_off()
+        gripper3_off()
+        gripper4_off()
+        gripper5_off()
+        gripper6_off()
+        gripper7_off()
+        gripper8_off()
        
 
-rospy.init_node("ur5_gripper_node", anonymous=False)
 
-gripper_status_sub = rospy.Subscriber('/ur5/vacuum_gripper/grasping', Bool, gripper_status, queue_size=1)
+if __name__ == '__main__':
+    rospy.init_node("ur5_gripper_node", anonymous=False)
 
-griper_sub = rospy.Subscriber('ur5_gripper', Bool, trigger, queue_size=1)
+    gripper_status_sub = rospy.Subscriber('/ur5/vacuum_gripper/grasping', Bool, gripper_status, queue_size=1)
 
-rate = rospy.Rate(10)
+    griper_sub = rospy.Subscriber('ur5_gripper', Bool, trigger, queue_size=1)
 
-while not rospy.is_shutdown():
-    # hello_str = "hello world %s" % rospy.get_time()
-    rate.sleep()
+    rate = rospy.Rate(10)
+
+    while not rospy.is_shutdown():
+        # hello_str = "hello world %s" % rospy.get_time()
+        rate.sleep()
