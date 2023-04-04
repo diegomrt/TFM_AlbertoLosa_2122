@@ -37,11 +37,11 @@ Para usar estos grippers usamos el plugin de ["Vacuum Gripper" de Gazebo](https:
 
 El urdf que contiene la definición de las pinzas es **grippers.urdf.xacro** del pkg ur5e_cam_description. Este urdf lo unimos al urdf del robot y la cámara en **ur5e_robot_camera-grippers_sim.urdf.xacro** del mismo pkg.
 
-Otra vez, con MoveIt Setup Assistant realizamos el pkg para simulación ur5e_cam-grippers_sim_moveit_config.
+Otra vez, con MoveIt Setup Assistant realizamos el pkg para simulación ur5e_cam-grippers_simulated_moveit_config.
 
 Para la simulación es necesario lanzar el archivo demo_gazebo.launch de este pkg de la siguiente forma:
 ```
-roslaunch ur5e_cam-grippers_sim_moveit_config demo_gazebo.launch
+roslaunch ur5e_cam-grippers_simulated_moveit_config demo_gazebo.launch
 ```
 Para actuar sobre la pinza de vacío, el plugin un servicio llamado /ur5e/vacuum_gripper/grasping/on (para encender el vacío) y /ur5e/vacuum_gripper/grasping/off (para soltar el objeto). Para llamar a estos servicios ultilizamos las siguientes líneas de código:
 ```
@@ -51,7 +51,23 @@ rosservice call /ur5/vacuum_gripper/off "{}"
 ```
 El estado de la pinza se actualiza en el topic /ur5e/vacuum_gripper/grasping.
 
-Problema actual: al hacer el call para activar la pinza de vacío, el estado en el topic no se actualiza (siempre en false).
+Además, se crea un scrip de python que actua sobre todas las pinzas de vacío que se incorporan (se introducen 8 debido a que una no tiene la fuerza suficiente como para sujetar un objeto) que se encuentra en ur5e_cam_description/scripts llamado **ur5_grippers.py**.
+
+## Creación urdf para robot real ur5e + Pinza OnRobot VGC10 + Realsense d435i
+Para la creación y el uso de este urdf para el robot real que incorpora tanto la pinza VGC10 de OnRobot y la cámara real de Realsense d435i es necesario instalar los siguientes pkgs:
+
+Primero instalaremos el pkg que nos ofrece la Universidad de Osaka, debemos clonarlo en el src de nuestro workspace ejecutando el siguiente comando:
+```
+git clone https://github.com/Osaka-University-Harada-Laboratory/onrobot.git
+```
+En segundo lugar, se instala las herramientas oficiales que nos ofrece Intel para el control de sus cámaras Realsense siguiendo los pasos del [repositorio oficial de Intel](https://github.com/IntelRealSense/realsense-ros/tree/ros1-legacy). El comado que se recomienda usar para instalarlo es:
+```
+sudo apt-get install ros-$ROS_DISTRO-realsense2-camera
+```
+
+Con esto, se realiza el urdf que se utiliza para representar al robot real llamado **ur5e_robot_camera-grippers_real.urdf.xacro** del pkg ur5e_cam_description.
+
+Con ello, se genera el pkg de configuración de MoveIt llamado: **ur5e_cam-grippers_real_moveit_config**.
 
 ## Conexión con el robot ur5e
 Para la conexión con el robot real, seguimos las instrucciones descritas el el [repositorio oficial de UniversalRobots](https://github.com/UniversalRobots/Universal_Robots_ROS_Driver).
@@ -71,8 +87,12 @@ git clone https://github.com/ros-industrial/ur_msgs.git
 Para controlar el robot con MoveIt hay que lanzar los siguientes .launch:
 ```
 roslaunch ur_robot_driver ur5e_bringup.launch robot_ip:=192.168.1.10
-roslaunch ur5e_cam-grippers_real_moveit_config moveit_planning_execution.launch
-rosrun rviz rviz
+roslaunch ur5e_cam-grippers_real_moveit_config demo_real.launch
+```
+
+Lanzamos la cámara con:
+```
+roslaunch realsense2_camera rs_camera.launch filters:=pointcloud
 ```
 
 ## USO DE YOLO
@@ -124,6 +144,7 @@ catkin build darknet_ros --no-deps --verbose --catkin-make-args run_tests
 ## MÁQUINA DE ESTADOS
 Para ver la detección en funcionamiento es necesario lanzar los siguientes paquetes:
 
+#### Para simulación:
 Para comenzar se lanza el ur5e con MoveIt, Gazebo y Rviz:
 
 ```
@@ -136,3 +157,5 @@ rosrun ur5e_cam_description states_machine_simulation.py
 ```
 
 Para que la detección tenga efecto es necesario colocar algún objeto en Gazebo (colocarlo justo debajo de la herramienta, ya que esa será la posición de visualización).
+
+#### Para robot real:

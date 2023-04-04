@@ -34,18 +34,14 @@ class Init(smach.State):
         try:
             rospy.loginfo("Initialitating the system")
 
-            # Define object launch
-            # self.node = roslaunch.core.Node('ur5e_cam_description', 'FK.py')
-            # self.launch = roslaunch.scriptapi.ROSLaunch()
-            # self.launch.start()
-            # self.process = self.launch.launch(self.node)
-
-            # rospy.loginfo("Moving to home pose")
-            # FK.main(0, -90, 90, -90, -90, 180)
+            rospy.loginfo("Moving to home pose")
+            # FK.main(0, -90, 90, -90, -90, 180) # Para simulated
+            FK.main(0, -90, 90, -90, -90, -90) # Para vgc10
 
             rospy.loginfo("¡The system has initialitated correctly!")
             return 'Success'
         except Exception as ex:
+            rospy.logerr("The system cannot initialitate correctly!")
             rospy.logerr(ex)
             return 'Failed'
 
@@ -83,7 +79,7 @@ class Moving(smach.State):
             # cv.imshow("camera1", self.cv_image)
             # cv.waitKey(1)
         except CvBridgeError as e:
-            rospy.logerr("Error en depth_callback" + e)
+            rospy.logerr("Error en depth_callback: " + e)
 
     def get_realxyz_callback(self, data):
         # print(data)
@@ -107,7 +103,7 @@ class Moving(smach.State):
         while not rospy.is_shutdown():
             self.pos_publisher.sendTransform((self.result[0],
                                         self.result[1],
-                                        self.result[2]), tf.transformations.quaternion_from_euler(0, 0, 180),
+                                        self.result[2]), tf.transformations.quaternion_from_euler(0, 0, pi),
                                         rospy.Time.now(), "objeto", "camera_color_optical_frame")
             try:
                 (trans, rotation) = self.listener.lookupTransform('base_link', 'objeto', rospy.Time(0))
@@ -125,10 +121,16 @@ class Moving(smach.State):
                                         trans[2]+0.01), tf.transformations.quaternion_from_euler(pi, 0, 0),
                                         rospy.Time.now(), "objeto2", "base_link")   ### Para ir perpend al suelo
 
+
                 rospy.sleep(2)
 
                 # IK_moveJ.main_quaternion(rotation, trans[0], trans[1], trans[2])  ### Vamos con la misma orientación que la recta que une la camara y el objeto
-                IK_moveJ.main_quaternion(tf.transformations.quaternion_from_euler(pi, 0, 0), trans[0], trans[1], trans[2])  ### Para ir perpend al suelo
+                # IK_moveJ.main_quaternion(tf.transformations.quaternion_from_euler(pi, 0, 0), trans[0], trans[1], trans[2])  ### Para ir perpend al suelo con wrist_3
+                x ,y, z = IK_moveJ.main_euler_tcp(pi, 0, 0, trans[0], trans[1], trans[2]+0.01)  ### Para ir perpend al suelo con tcp
+                self.pos_publisher.sendTransform((x,
+                                        y,
+                                        z), tf.transformations.quaternion_from_euler(pi, 0, 0),
+                                        rospy.Time.now(), "punto_aprox", "base_link")   ### Para ir perpend al suelo
                 rospy.loginfo("Activando pinza de vacío")
                 gripper.trigger_gripper(True)
                 rospy.loginfo("Paso por punto intermedio")
@@ -155,7 +157,8 @@ class Moving(smach.State):
 
         try:
             rospy.loginfo("Moving to view pose")
-            FK.main(0, -87, 81, -8, -90, -180)
+            # FK.main(0, -87, 81, -8, -90, -180) # Para simulated
+            FK.main(0, -90, 90, -90, -90, -90) # Para vgc10
             rospy.loginfo("Ejecutando Yolo")
             ruta_yolo = "/home/alberto/tfm_ws/src/darknet_ros/darknet_ros/launch/darknet_ros.launch"
             uuid_yolo = roslaunch.rlutil.get_or_generate_uuid(None, False)
