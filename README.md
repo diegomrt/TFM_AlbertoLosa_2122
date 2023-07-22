@@ -90,9 +90,9 @@ roslaunch ur_robot_driver ur5e_bringup.launch robot_ip:=192.168.1.10
 roslaunch ur5e_cam-grippers_real_moveit_config demo_real.launch
 ```
 
-Lanzamos la cámara con:
+Lanzamos la cámara (con alineamiento de la cámara de profundidad con la visibley nube de puntos) con:
 ```
-roslaunch realsense2_camera rs_camera.launch filters:=pointcloud
+roslaunch realsense2_camera rs_camera.launch align_depth:=true filters:=pointcloud
 ```
 
 ## USO DE YOLO

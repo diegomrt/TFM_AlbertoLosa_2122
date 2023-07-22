@@ -44,6 +44,8 @@ def move_pose_arm_euler(roll, pitch, yaw, x, y, z):
     arm_group.stop()  # To guarantee no residual movement
     arm_group.clear_pose_targets()
 
+    return plan
+
 def move_pose_arm_quaternion(quaternion, x, y, z):
     pose_goal = geometry_msgs.msg.Pose()
     pose_goal.orientation.x = quaternion[0]

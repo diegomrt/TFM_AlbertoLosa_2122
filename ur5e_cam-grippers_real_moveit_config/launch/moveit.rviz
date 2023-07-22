@@ -5,10 +5,11 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /MotionPlanning1
         - /MotionPlanning1/Planned Path1
+        - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
-    Tree Height: 240
+    Tree Height: 299
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -285,31 +286,55 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
         base:
-          Value: true
+          Value: false
         base_link:
           Value: true
         base_link_inertia:
-          Value: true
+          Value: false
+        camera_aligned_depth_to_color_frame:
+          Value: false
+        camera_bottom_screw_frame:
+          Value: false
+        camera_color_frame:
+          Value: false
+        camera_color_optical_frame:
+          Value: false
+        camera_depth_frame:
+          Value: false
+        camera_depth_optical_frame:
+          Value: false
+        camera_link:
+          Value: false
         flange:
-          Value: true
+          Value: false
         forearm_link:
+          Value: false
+        objeto:
           Value: true
+        objeto2:
+          Value: true
+        onrobot_vgc10_base_link:
+          Value: false
         shoulder_link:
+          Value: false
+        suction:
           Value: true
+        support:
+          Value: false
         tool0:
-          Value: true
+          Value: false
         tool0_controller:
           Value: true
         upper_arm_link:
-          Value: true
+          Value: false
         world:
-          Value: true
+          Value: false
         wrist_1_link:
-          Value: true
+          Value: false
         wrist_2_link:
-          Value: true
+          Value: false
         wrist_3_link:
           Value: true
       Marker Alpha: 1
@@ -334,6 +359,23 @@ Visualization Manager:
                           flange:
                             tool0:
                               {}
+                          support:
+                            camera_bottom_screw_frame:
+                              camera_link:
+                                camera_aligned_depth_to_color_frame:
+                                  camera_color_optical_frame:
+                                    objeto:
+                                      {}
+                                camera_color_frame:
+                                  {}
+                                camera_depth_frame:
+                                  camera_depth_optical_frame:
+                                    {}
+                            onrobot_vgc10_base_link:
+                              suction:
+                                {}
+            objeto2:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -392,7 +434,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.686182737350464
+      Distance: 2.5022943019866943
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -408,9 +450,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.1597975343465805
+      Pitch: 0.34479737281799316
       Target Frame: world
-      Yaw: 1.2967839241027832
+      Yaw: 1.0467840433120728
     Saved: ~
 Window Geometry:
   Displays:
@@ -426,7 +468,7 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000001f30000039efc0200000008fb000000100044006900730070006c006100790073010000003d0000012d000000c900fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a00560069006500770073000000010c000000a4000000a400fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000170000001c10000017d00fffffffb0000000a0049006d0061006700650100000337000000a40000001600ffffff0000053f0000039e00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000002970000039efc0200000008fb000000100044006900730070006c006100790073010000003d00000168000000c900fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a00560069006500770073000000010c000000a4000000a400fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006701000001ab000001880000017d00fffffffb0000000a0049006d0061006700650100000339000000a20000001600ffffff0000049b0000039e00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: false
   Width: 1848
