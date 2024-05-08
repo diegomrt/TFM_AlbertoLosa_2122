@@ -4,10 +4,13 @@ import math
 
 import matplotlib.pyplot as plt
 
+import time
+
 
 def main(img_prof, xmax, ymax, xmin, ymin):
     # try:
     y_med = round((ymax + ymin)/2)
+    x_rest = int((xmax - xmin)*0.25)
 
     ## Comprobación de la orientación de la pieza ##
     recta_hist = []
@@ -15,8 +18,9 @@ def main(img_prof, xmax, ymax, xmin, ymin):
     acum_10 =[]
 
     z_anterior = img_prof[y_med,xmin]
+    print(z_anterior)
 
-    for x in range (xmin, xmax):
+    for x in range (xmin + x_rest, xmax - x_rest):
         z_act = img_prof[y_med,x]
         resta : int =  int(z_act) - int(z_anterior)
         print(z_act, z_anterior, resta)
@@ -42,15 +46,15 @@ def main(img_prof, xmax, ymax, xmin, ymin):
 
     print(esquinas)
 
-    plt.figure()
-    plt.plot(recta_hist)
-    plt.show()
+    # plt.figure()
+    # plt.plot(recta_hist)
+    # plt.show()
 
 
-    if (len(esquinas) == 2):
-        return "Orientación y"
+    if (len(esquinas) == 2 or len(esquinas) == 1):
+        return "Orientación y", recta_hist
     elif (len(esquinas) == 0):
-        return "Orientación x"
+        return "Orientación x", recta_hist
     else:
         return("No se ha podido determinar la orientación de la pieza")
 
@@ -62,11 +66,11 @@ def main(img_prof, xmax, ymax, xmin, ymin):
 if __name__ == '__main__':
     # img = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/defects/superior_sd_Color.png')
     # img = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/defects/superior_sd_1_Color.png')
-    img = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/base230713_191407.png')
-    img = cv.cvtColor(img,cv.COLOR_RGB2BGR)
+    img = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/depth231026_143153.png')
+    img = cv.cvtColor(img,cv.COLOR_RGB2GRAY)
     
     assert img is not None, "file could not be read, check with os.path.exists()"
 
-    resultado = main(img)
+    resultado = main(img, 380, 242, 249, 147)
 
     print(resultado)

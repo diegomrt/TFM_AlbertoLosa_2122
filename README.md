@@ -22,7 +22,7 @@ Ahora debemos acudir al pkg creado como realsense_description_issaias y en urdf/
 
 Se crea un urdf que incorpora tanto la descripción del robot (ur5e) como el modelo de la cámara de RealSense con el plugin para la simulación en gazebo: **ur5e_robot_camera_sim.urdf.xacro** del pkg ur5e_cam_description.
 
-Con MoveIt Setup Assistant realizamos el pkg ur5e_cam_sim_moveit_config (documento de apoyo [aquí](https://ros-planning.github.io/moveit_tutorials/doc/setup_assistant/setup_assistant_tutorial.html))
+Con MoveIt Setup Assistant realizamos el pkg **ur5e_cam_sim_moveit_config** (documento de apoyo [aquí](https://ros-planning.github.io/moveit_tutorials/doc/setup_assistant/setup_assistant_tutorial.html))
 
 Este pkg ya se ha realizado y se encuentra en la carpeta TFM_AlbertoLosa_2122 al clonar este repositorio según se describe en el primer paso de este Readme.
 
@@ -37,7 +37,7 @@ Para usar estos grippers usamos el plugin de ["Vacuum Gripper" de Gazebo](https:
 
 El urdf que contiene la definición de las pinzas es **grippers.urdf.xacro** del pkg ur5e_cam_description. Este urdf lo unimos al urdf del robot y la cámara en **ur5e_robot_camera-grippers_sim.urdf.xacro** del mismo pkg.
 
-Otra vez, con MoveIt Setup Assistant realizamos el pkg para simulación ur5e_cam-grippers_simulated_moveit_config.
+Otra vez, con MoveIt Setup Assistant realizamos el pkg para simulación **ur5e_cam-grippers_simulated_moveit_config**.
 
 Para la simulación es necesario lanzar el archivo demo_gazebo.launch de este pkg de la siguiente forma:
 ```
@@ -98,37 +98,6 @@ roslaunch realsense2_camera rs_camera.launch align_depth:=true filters:=pointclo
 ## USO DE YOLO
 Se hace uso del repositorio creado por M. Bjelonic "YOLO ROS: Real-Time Object Detection for ROS", URL: https://github.com/leggedrobotics/darknet_ros, 2018.
 
-Si se dispone de una GPU Nvidia compatible con CUDA, el procesamiento será notablemente más rápido (más información en el link del repositorio). 
-
-Primero hay que instalar los drivers de GPU Nvidia:
-
-**Esta parte a continuación no se ha podido realizar de manera satisfactoria. Para continuar usando Yolo con la CPU (notablemente más lento ir a &1)**
-
-```
-sudo add-apt-repository ppa:graphics-drivers/ppa
-sudo apt install nvidia-driver-440
-sudo reboot     --> CUIDADO! REINICIAMOS EL SISTEMA	
-nvidia-smi
-```
-
-Para instalar CUDA se especifica la configuración y se dan las instrucciones para la instalación [aquí](https://developer.nvidia.com/cuda-toolkit) (en mi caso he instalado la versión 11.8 ya que las anteriores dan problemas):
-```
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
-sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
-sudo dpkg -i cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
-sudo cp /var/cuda-repo-ubuntu2004-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
-sudo apt-get update
-sudo apt-get -y install cuda
-```
-
-En mi caso sale un error, por lo tanto hay que hacer:
-```
-sudo apt-get install aptitude
-sudo aptitude install cuda
-```
-**&1. Continuación**
-
 E instalamos el pkg y compilamos con:
 ```
 git clone --recursive https://github.com/leggedrobotics/darknet_ros.git
@@ -139,23 +108,58 @@ Por último, se realiza un test de la instalación:
 ```
 catkin build darknet_ros --no-deps --verbose --catkin-make-args run_tests
 ```
-(En mi caso no he podido porque he tenido que hacer la compilación con catkin_make)
 
-## MÁQUINA DE ESTADOS
+## ARRANQUE DEL ROBOT
 Para ver la detección en funcionamiento es necesario lanzar los siguientes paquetes:
 
 #### Para simulación:
 Para comenzar se lanza el ur5e con MoveIt, Gazebo y Rviz:
 
 ```
-roslaunch ur5e_cam-grippers_simulated_moveit_config demo_gazebo.launch
-```
-
-Cuando se haya inicializado se laza el paquete Python que contiene la máquina de estados:
-```
-rosrun ur5e_cam_description states_machine_simulation.py
+roslaunch ur5e_cam-grippers_vgc10_simulated_moveit_config demo_gazebo.launch
 ```
 
 Para que la detección tenga efecto es necesario colocar algún objeto en Gazebo (colocarlo justo debajo de la herramienta, ya que esa será la posición de visualización).
 
 #### Para robot real:
+Para el robot real es necesario lanzar el External Control:
+
+```
+roslaunch ur_robot_driver ur5e_bringup.launch robot_ip:=192.168.1.10
+```
+
+También hay que lanzar el nodo de la cámara Intel Realsense con los filtros seleccionados:
+
+```
+roslaunch realsense2_camera rs_camera.launch align_depth:=true filters:=pointcloud,hole_filling,temporal
+```
+
+Por último, se lanza MoveIt y Rviz:
+
+```
+roslaunch ur5e_cam-grippers_real_moveit_config demo_real.launch
+```
+
+## LANZAMIENTO DE LA APLICACIÓN
+
+A continuación se explica los archivos a lanzar dependiendo de el caso del trabajo que se quiere realizar y se muestran unos videos de cada caso práctico.
+
+### Caso práctico 1: 
+
+En este caso practico se realiza pick and place de las manzanas y naranjas que se encuentren dentro de la imagen. Para ello, es necesario lanzar el archivo de python:
+
+```
+rosrun ur5e_cam_description states_machine_practice_caso1.py 
+```
+
+VIDEO
+
+### Caso práctico 2: 
+
+En este caso practico se realiza un estudio de los defectos de determinadas piezas, discretizadas mediante CNN. Para ello, es necesario lanzar el archivo de python:
+
+```
+rosrun ur5e_cam_description states_machine_practice_caso2.py 
+```
+
+VIDEO

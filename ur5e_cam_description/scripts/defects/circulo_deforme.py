@@ -5,19 +5,25 @@ import matplotlib.pyplot as plt
 
 import time
 
+
 def main(cimg):
     try:
-        cimg = cv.medianBlur(cimg,7)
-        img = cv.cvtColor(cimg,cv.COLOR_RGB2GRAY)
+        if __name__ != '__main__':
+            cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme" + time.strftime("%y%m%d_%H%M%S") + ".png", cimg)
 
-        cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme" + time.strftime("%y%m%d_%H%M%S") + ".png", cimg)
-        cv.imshow('byn',img)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+        cimg = cimg[150:460,100:540]
+
+        cimg = cv.medianBlur(cimg,9)
+        img = cv.cvtColor(cimg,cv.COLOR_RGB2GRAY)
+        
+        ## DEBUG
+        # cv.imshow('byn',img)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
         # Calculo de círculos
-        # circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT_ALT,15,40,param1=200,param2=0.9,minRadius=10,maxRadius=0)
-        circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,1,50,param1=200,param2=27,minRadius=4,maxRadius=0)
+        circles = cv.HoughCircles(img,cv.HOUGH_GRADIENT,1,50,param1=100,param2=21,minRadius=10,maxRadius=50)
+
         circles = np.uint16(np.around(circles))
 
         # Pintar elementos sobre la imagen
@@ -42,39 +48,51 @@ def main(cimg):
         contours, _ = cv.findContours(img_neg,cv.RETR_TREE,cv.CHAIN_APPROX_NONE)
         cv.drawContours(imagen_recortada, contours, -1, (0,255,0), 3)
 
-        M = cv.moments(contours[0])
+        if (len(contours) > 1):
+            perim_comparaci = 100000
+            for i in range (len(contours)):
+                aux = cv.arcLength(contours[i], True)
+                if (aux < perim_comparaci):
+                    perim_comparaci = aux
+                    contorno = contours[i]
+        else:
+            contorno = contours[0]
+
+        M = cv.moments(contorno)
 
         area = M["m00"]
-        perimetro = cv.arcLength(contours[0], True)
+        perimetro = cv.arcLength(contorno, True)
 
         print("Area: ", area, "\nPerimetro: ", perimetro)
         print((perimetro**2)/(4*area))
         print(perimetro/(2*circulo_grande[2]))
 
-        cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme_circulos" + time.strftime("%y%m%d_%H%M%S") + ".png", cimg)
-        cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme_recortada" + time.strftime("%y%m%d_%H%M%S") + ".png", imagen_recortada)
-        cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme_otsu" + time.strftime("%y%m%d_%H%M%S") + ".png", img_neg)
+        ## DEBUG
+        # cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme_circulos" + time.strftime("%y%m%d_%H%M%S") + ".png", cimg)
+        # cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme_recortada" + time.strftime("%y%m%d_%H%M%S") + ".png", imagen_recortada)
+        # cv.imwrite("/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme_otsu" + time.strftime("%y%m%d_%H%M%S") + ".png", img_neg)
 
+        ## DEBUG
+        # cv.imshow('img',img)
+        # cv.imshow('cimg',cimg)
+        # cv.imshow('imagen_recortada',imagen_recortada)
+        # cv.imshow('otsu',img_neg)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
-        cv.imshow('img',img)
-        cv.imshow('cimg',cimg)
-        cv.imshow('imagen_recortada',imagen_recortada)
-        cv.imshow('otsu',img_neg)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
-
-        if ((perimetro**2)/(4*area) < 3.55 and perimetro/(2*circulo_grande[2]) < 3.3):
-            return "bien"
+        if ((perimetro**2)/(4*area) < 3.6 and (perimetro**2)/(4*area) > 3.1):
+            if (perimetro/(2*circulo_grande[2]) < 3.4 and perimetro/(2*circulo_grande[2]) > 3.05):
+                return "bien"
+            else:
+                return "mal"
         else:
             return "mal"
     except Exception as ex:
+            print(ex)
             return ex
 
 if __name__ == '__main__':
-    # cimg = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/defects/lateral_circulo_despl_Color.png')
-    # cimg = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/defects/lateral_no_circulo_Color.png')
-    # cimg = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/defects/lateral_sd_1_Color.png')
-    cimg = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/img_reales/deforme230713_162217.png')
+    cimg = cv.imread('/home/alberto/tfm_ws/src/TFM_AlbertoLosa_2122/ur5e_cam_description/scripts/defects/lateral_circulo_despl_Color.png')
     
     assert cimg is not None, "file could not be read, check with os.path.exists()"
 

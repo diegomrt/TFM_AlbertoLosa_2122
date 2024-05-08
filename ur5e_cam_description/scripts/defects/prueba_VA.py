@@ -41,10 +41,12 @@ def get_color_callback(data):
     try:
         global suma
         global frame_color
+        global get_color_subscriber
         frame_color = cvbrd.imgmsg_to_cv2(data)
         # cv.imshow("camera1", self.cv_image)
         # cv.waitKey(0)
         suma = suma + 1
+        get_color_subscriber.unregister()
     except CvBridgeError as e:
         rospy.logerr("Error en depth_callback" + e)
 
@@ -72,6 +74,7 @@ def listener():
 
     global get_depth_subscriber
     global get_yolo_subscriber
+    global get_color_subscriber
 
     # In ROS, nodes are uniquely named. If two nodes with the same
     # name are launched, the previous one is kicked off. The
@@ -138,9 +141,22 @@ def listener():
     get_depth_subscriber = rospy.Subscriber('/camera/aligned_depth_to_color/image_raw', Image, get_depth_callback, queue_size=1)
     get_yolo_subscriber = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, get_yolo_callback, queue_size=1)
 
-    while (suma < 2):
+    get_color_subscriber = rospy.Subscriber('/camera/color/image_raw', Image, get_color_callback, queue_size=1)
+
+    while (suma < 3):
         print(suma)
         rospy.sleep(0.5)
+
+    y_med = round((bounding_box[0].ymax + bounding_box[0].ymin)/2)
+    x_rest = int((bounding_box[0].xmax - bounding_box[0].xmin)*0.25)
+
+    cv.line(frame_color, (bounding_box[0].xmin + x_rest, y_med), (bounding_box[0].xmax - x_rest, y_med), (255,0,0), 1)
+
+    cv.imshow('as', frame_color)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
+
 
 
     print(orientacion_pieza_bound_box.main(frame_depth, bounding_box[0].xmax, bounding_box[0].ymax, bounding_box[0].xmin, bounding_box[0].ymin))

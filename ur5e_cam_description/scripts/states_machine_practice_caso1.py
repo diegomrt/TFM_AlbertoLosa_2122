@@ -2,6 +2,7 @@
 
 import FK
 import IK_moveJ
+import IK_moveL
 import ur5_grippers as gripper
 import serv_pinza
 
@@ -24,7 +25,7 @@ from math import pi
 import pyrealsense2 as rs
 
 ## Variable del script para saber si estamos en simulación o no
-simulacion = 1
+simulacion = 0
 
 
 # define state Camera
@@ -87,10 +88,9 @@ class Detection(smach.State):
             if (simulacion == 1):
                 self.objeto = "frisbee"
             else:
-                # self.objeto = "apple"
                 self.objeto = "frisbee"
             if (element.Class == "orange" or element.Class == self.objeto):
-                rospy.loginfo("Incluiding it in the list")
+                # Se incluye en la lista de objetos para recoger
                 self.bounding_box.append(element)
                 self.get_data_subscriber.unregister()
                 self.get_data_subscriber = None
@@ -102,9 +102,9 @@ class Detection(smach.State):
 
     def get_depth_callback (self, data):
         try:
-            # rospy.loginfo("receiving video frame")
             cvbrd = CvBridge()
             self.cv_image = cvbrd.imgmsg_to_cv2(data)
+            # DEBUG
             # cv.imshow("camera1", self.cv_image)
             # cv.waitKey(0)
         except CvBridgeError as e:
@@ -134,7 +134,6 @@ class Detection(smach.State):
             if (simulacion == 1):
                 self.get_depth_subscriber = rospy.Subscriber('/camera/depth/image_raw', Image, self.get_depth_callback, queue_size=1) #Seguir aquí (hacer función feedback)
             else:
-                # self.get_depth_subscriber = rospy.Subscriber('/camera/depth/image_rect_raw', Image, self.get_depth_callback, queue_size=1) #Seguir aquí (hacer función feedback)
                 self.get_depth_subscriber = rospy.Subscriber('/camera/aligned_depth_to_color/image_raw', Image, self.get_depth_callback, queue_size=1) #Seguir aquí (hacer función feedback)
 
             while True:
@@ -173,15 +172,12 @@ class Picking(smach.State):
                 self.object_done = False
                 self.x_med = round((elem.xmax + elem.xmin)/2)
                 self.y_med = round((elem.ymax + elem.ymin)/2)
-                if (simulacion == 1):
-                    self.z_med = (self.cv_image[int((self.y_med)),int((self.x_med))])/1000
-                else:
-                    # self.z_med = (self.cv_image[int((self.y_med*(2/3))),int((self.x_med)*(2/3))])/1000
-                    self.z_med = (self.cv_image[int((self.y_med)),int((self.x_med))])/1000
-                    # rs.rs2_project_color_pixel_to_depth_pixel() # Esto es más exacto
-                
+
+                # Obtener altura del objeto desde la imagen de profundidad
+                self.z_med = (self.cv_image[int((self.y_med)),int((self.x_med))])/1000
                 rospy.loginfo('Z medida: ' + str(self.z_med))
 
+                # Obtener info de la camara para saber posición x,y,z reales
                 self.get_realxyz_subscriber = rospy.Subscriber('/camera/color/camera_info', CameraInfo, self.get_realxyz_callback, queue_size=1) #Seguir aquí (hacer función feedback)
                 
 
@@ -201,38 +197,43 @@ class Picking(smach.State):
         self._intrinsics.ppy = data.K[5]
         self._intrinsics.fx = data.K[0]
         self._intrinsics.fy = data.K[4]
-        #self._intrinsics.model = data.distortion_model
+
         self._intrinsics.model  = rs.distortion.none
         if (simulacion == 1):
             self._intrinsics.coeffs = [i for i in [0.0, 0.0, 0.0, 0.0, 0.0]]
         else:
             self._intrinsics.coeffs = [i for i in data.D]
+        
+        # Coordenadas del objeto
         self.result = rs.rs2_deproject_pixel_to_point(self._intrinsics, [self.x_med, self.y_med], self.z_med)
-        rospy.loginfo("Coordenadas del objeto en píxeles: " + str(self.result))
+        # DEBUG
+        # rospy.loginfo("Coordenadas del objeto desde la cam: " + str(self.result))
+
         self.get_realxyz_subscriber.unregister()
 
         # Actualizamos la transformada
         self.pos_publisher = tf.TransformBroadcaster()
         self.listener = tf.TransformListener()
         while not rospy.is_shutdown():
+
             self.pos_publisher.sendTransform((self.result[0],
                                         self.result[1],
                                         self.result[2]), tf.transformations.quaternion_from_euler(0, 0, pi),
                                         rospy.Time.now(), "objeto", "camera_color_optical_frame")
+
             try:
                 (trans, rotation) = self.listener.lookupTransform('base_link', 'objeto', rospy.Time(0))
                 rospy.loginfo("La transformada del objeto se encuentra en: %f(x), %f(y), %f(z)", trans[0], trans[1], trans[2])
-                ##### DEBUG ######
+
+                # DEBUG
                 # rospy.logdebug("Quaternion del objeto se encuentra en: ", str(rotation))
                 # rospy.logdebug("La transformada a euler del objeto se encuentra en: ", str(tf.transformations.quaternion_from_euler(rotation[0], rotation[1], rotation[2])))
-                ##################
-
-
+                
                 #### Para ir con la misma orientación que la recta que une la cámara y el objeto
                 # self.pos_publisher.sendTransform((trans[0],
                 #                         trans[1],
                 #                         trans[2]), rotation,
-                #                         rospy.Time.now(), "objeto2", "base_link")  ### Vamos con la misma orientación que la recta que une la camara y el objeto
+                #                         rospy.Time.now(), "objeto", "base_link")  ### Vamos con la misma orientación que la recta que une la camara y el objeto
 
                 #### Para ir perpendicular al suelo
                 self.pos_publisher.sendTransform((trans[0],
@@ -242,45 +243,48 @@ class Picking(smach.State):
 
                 self.resultado = input ("Comprueba en rviz la posición del objeto, ¿seguro que quiere acudir a esa posición? (y or n)")
 
-
                 if self.resultado == "y":
                 
                     rospy.sleep(2)
 
                     # IK_moveJ.main_quaternion(rotation, trans[0], trans[1], trans[2])  ### Vamos con la misma orientación que la recta que une la camara y el objeto
-                    # IK_moveJ.main_quaternion(tf.transformations.quaternion_from_euler(pi, 0, 0), trans[0], trans[1], trans[2])  ### Para ir perpend al suelo con wrist_3
-                    x ,y, z = IK_moveJ.main_euler_tcp(pi, 0, 0, trans[0], trans[1], trans[2])  ### Para ir perpend al suelo con tcp
-                    self.pos_publisher.sendTransform((x,
-                                        y,
-                                        z), tf.transformations.quaternion_from_euler(pi, 0, 0),
-                                        rospy.Time.now(), "punto_aprox", "base_link")   ### Para ir perpend al suelo
 
-                    rospy.sleep(5)
+                    x ,y, z = IK_moveJ.main_euler_tcp(pi, 0, 0, trans[0], trans[1], 0.17)  ### Punto acercamiento
+                    x ,y, z = IK_moveL.main_euler_tcp(pi, 0, 0, trans[0], trans[1], trans[2]-0.02)  ### Para ir perpend al suelo con tcp
 
-                    rospy.loginfo("Activando pinza de vacío")   #### Hay que ver como activarla ######
+                    rospy.sleep(0.5)
+
+                    rospy.loginfo("Activando pinza de vacío")
                     if (simulacion == 1):
                         gripper.trigger_gripper(True)
                     else:
                         serv_pinza.turn(1)
-                    rospy.sleep(2)
-                    rospy.loginfo("Paso por punto intermedio")
+
+                    rospy.sleep(0.5)
+
+                    # Paso por punto intermedio
                     IK_moveJ.main_euler_tcp(pi, 0, 0, trans[0], trans[1], 0.3)  ### Para ir perpend al suelo con tcp
+
                     rospy.loginfo("Dejando objeto")
                     if (simulacion == 1):
                         FK.main(90, -85, 109, -113, -90, 0)
                     else:
-                        FK.main(0, -90, 90, -90, -90, 0)
+                        IK_moveL.main_euler_tcp(pi, 0, pi/2, 0, 0.83, 0.17)
+
                     rospy.loginfo("Desactivando pinza de vacío")
                     if (simulacion == 1):
                         gripper.trigger_gripper(False)
                     else:
                         serv_pinza.turn(0)
-                    rospy.sleep(10)
-                    rospy.loginfo("Terminado movimiento")
+                        
+                    rospy.sleep(1)
+
                 else:
                     rospy.logwarn("Se ha cancelado el acudir a recoger el objeto")
+
                 self.object_done = True
                 break
+            
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 rospy.logerr("Error al publicar transformada TF")
                 rospy.sleep(1)
