@@ -152,7 +152,7 @@ En este caso practico se realiza pick and place de las manzanas y naranjas que s
 rosrun ur5e_cam_description states_machine_practice_caso1.py 
 ```
 
-VIDEO
+[VIDEO DEMO Caso práctico 1](https://youtu.be/8ur-uP9Qk1c?si=fTauOi_9VRL5MDdF)
 
 ### Caso práctico 2: 
 
@@ -162,4 +162,4 @@ En este caso practico se realiza un estudio de los defectos de determinadas piez
 rosrun ur5e_cam_description states_machine_practice_caso2.py 
 ```
 
-VIDEO
+[VIDEO DEMO Caso práctico 2](https://youtu.be/iHvVHL7QZaA?si=gLrTsfHEHVymxIJG)
